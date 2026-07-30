@@ -24,7 +24,7 @@ import httpx
 import requests
 from bs4 import BeautifulSoup
 
-BOT_TOKEN_CFG = "8705134820:AAFMJY_4WYgW06AHw7hRYHYQYRJXdhTmtkY"
+BOT_TOKEN_CFG = "8795667160:AAGBLi56Dkf2e15NNra3Fua73GxNiZujwXU"
 ADMIN_IDS_CFG = [8557521484, 6138292855, 5277564584, 7220775981]
 OWNER_ID_CFG = 6138292855
 
@@ -4770,58 +4770,152 @@ def handle_callback(call):
                     save_mail(mail_data.split(":")[0], mail_data.split(":")[1], mail_data.split(":")[2])
                     bot.delete_message(chat_id, status_msg.message_id)
                     result_text = f"Почта создана!\n\nАдрес: {mail_data.split(':')[1]}"
-                    markup = types.InlineKeyboardMarkup()
-                    markup.add(types.InlineKeyboardButton("Назад", callback_data="menu_tempmail"))
-                    bot.send_message(chat_id, result_text, reply_markup=markup)
-                else:
-                    bot.delete_message(chat_id, status_msg.message_id)
-                    bot.send_message(chat_id, "Ошибка при создании почты")
-            except Exception as e:
-                try:
-                    bot.delete_message(chat_id, status_msg.message_id)
-                except:
-                    pass
-                bot.send_message(chat_id, f"Ошибка: {e}")
-        
-        threading.Thread(target=_create_tempmail, daemon=True).start()
-        bot.answer_callback_query(call.id, show_alert=False)
-        
-    elif call.data == "menu_profile":
-        chat_id = call.message.chat.id
-        try:
-            bot.delete_message(chat_id, call.message.message_id)
-        except:
-            pass
-        profile_text = f"Профиль\n\nID: {user_id}\nЗапросов: безлимит\n\nПоддержка — @CLTaobot"
-        markup = types.InlineKeyboardMarkup()
-        markup.add(types.InlineKeyboardButton("Назад", callback_data="back_main"))
-        m = bot.send_message(chat_id, profile_text, reply_markup=markup)
-        last_menu_msg[chat_id] = m.message_id
-        bot.answer_callback_query(call.id, show_alert=False)
-    elif call.data == "menu_subscription":
-        chat_id = call.message.chat.id
-        try:
-            bot.delete_message(chat_id, call.message.message_id)
-        except:
-            pass
-        username = call.from_user.username if call.from_user.username else "Пользователь"
-        subscription_text = f"Подписка\n\n{username} какая подписка? Вы свободны."
-        markup = types.InlineKeyboardMarkup()
-        markup.add(types.InlineKeyboardButton("Назад", callback_data="back_main"))
-        m = bot.send_message(chat_id, subscription_text, reply_markup=markup)
-        last_menu_msg[chat_id] = m.message_id
-        bot.answer_callback_query(call.id, show_alert=False)
 
-if __name__ == '__main__':
-    # Запускаем фоновый поток для проверки логов
-    logger_thread = threading.Thread(target=logger_background_checker, daemon=True)
-    logger_thread.start()
-    
-    while True:
-        try:
-            bot.infinity_polling(timeout=60, long_polling_timeout=60)
-        except Exception as e:
-            print(f"Ошибка: {e}")
-            print("Переподключение через 10 секунд...")
-            time.sleep(10)
-            continue
+import sys
+import string
+import os
+import re
+import time
+import threading
+import asyncio
+import json
+import random
+import tempfile
+import hashlib
+import base64
+import aiohttp
+import sqlite3
+from datetime import datetime, timedelta
+from collections import defaultdict
+from typing import Optional, Any, List, Dict
+from pathlib import Path
+from io import BytesIO
+
+
+import telebot
+from telebot import types
+import httpx
+import requests
+from bs4 import BeautifulSoup
+
+
+BOT_TOKEN_CFG = ""
+ADMIN_IDS_CFG = [8557521484, 6138292855, 5277564584, 7220775981]
+OWNER_ID_CFG = 6138292855
+
+
+CHANNEL_ID = -1004447049309
+CHANNEL_LINK = "https://t.me/+7DX76Z1638lmNmIy"
+
+
+# ====== WHOLOGGER API ======
+WHOLOGGER_API_KEY = "B5sXwumT4wXESCPw"
+WHOLOGGER_BASE = "https://whologger.cfd/api"
+
+
+FACE_API_BASE = "https://similarfaces.me"
+FACE_MAX_FILE_SIZE = 5 * 1024 * 1024
+FACE_DETECT_ENDPOINT = "/bff/detect-faces"
+FACE_SEARCH_ENDPOINT = "/bff/search-faces"
+
+
+FUNSTAT_TOKEN = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI3NjcyMDkyMDIzIiwianRpIjoiY2I4YWIzMjEtNGUwMi00NmM2LWkyODAtYjAyZGMzNjBlY2U3IiwiZXhwIjoxODEzMzQ4NzM0fQ.ZvbeqetyRiOTi9LM3pfRyr7mC6_lx4t46rVi7GWQQ0xkWmGPmJyxmo8R6DOF1s8Bne0W--LtzgP63R6uKNjFF9mpCmKQilPAwUvGWjjaDkDi9A9FZW2dTEmx2odeULFgQZTsc8FeC5D909IdvZCdiTbesvdFnGLsIi-DDOyj33U"
+FUNSTAT_API_URL = "https://funstat.info/api/v1"
+
+
+# ====== QUICKFLOW ======
+QUICKFLOW_TOKEN = "063b6819d85570dfe1b5f5b4ba5be14ac1d66a74e848ee9d1588068a9cf9b372"
+QUICKFLOW_URL = "https://api.quickflow.lat"
+
+
+# ====== GOOGLE SEARCH ======
+GOOGLE_API_KEY = "AIzaSyDxQoDCbzrU22SwyLMln3Qj2__PMUFTC9o"
+GOOGLE_CX = "84a64448a902c4626"
+
+
+# ====== TONCENTER ======
+TONCENTER_URL = "https://toncenter.com/api/v3"
+
+
+# ====== DEPSEARCH ======
+DEPSEARCH_TOKEN = "TKeRG1ONMsqUrGIUeuTPbXegGPiwMpJ5"
+DEPSEARCH_BACKUP_TOKEN = "TKeRG1ONMsqUrGIUeuTPbXegGPiwMpJ5"
+DEPSEARCH_URL = "https://api.depsearch.sbs"
+
+
+# ====== NIGHTSEARCH ======
+9 
+import sys
+import string
+import os
+import re
+import time
+import threading
+import asyncio
+import json
+import random
+import tempfile
+import hashlib
+import base64
+import aiohttp
+import sqlite3
+from datetime import datetime, timedelta
+from collections import defaultdict
+from typing import Optional, Any, List, Dict
+from pathlib import Path
+from io import BytesIO
+
+
+import telebot
+from telebot import types
+import httpx
+import requests
+from bs4 import BeautifulSoup
+
+
+BOT_TOKEN_CFG = ""
+ADMIN_IDS_CFG = [8557521484, 6138292855, 5277564584, 7220775981]
+OWNER_ID_CFG = 6138292855
+
+
+CHANNEL_ID = -1004447049309
+CHANNEL_LINK = "https://t.me/+7DX76Z1638lmNmIy"
+
+
+# ====== WHOLOGGER API ======
+WHOLOGGER_API_KEY = "B5sXwumT4wXESCPw"
+WHOLOGGER_BASE = "https://whologger.cfd/api"
+
+
+FACE_API_BASE = "https://similarfaces.me"
+FACE_MAX_FILE_SIZE = 5 * 1024 * 1024
+FACE_DETECT_ENDPOINT = "/bff/detect-faces"
+FACE_SEARCH_ENDPOINT = "/bff/search-faces"
+
+
+FUNSTAT_TOKEN = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI3NjcyMDkyMDIzIiwianRpIjoiY2I4YWIzMjEtNGUwMi00NmM2LWkyODAtYjAyZGMzNjBlY2U3IiwiZXhwIjoxODEzMzQ4NzM0fQ.ZvbeqetyRiOTi9LM3pfRyr7mC6_lx4t46rVi7GWQQ0xkWmGPmJyxmo8R6DOF1s8Bne0W--LtzgP63R6uKNjFF9mpCmKQilPAwUvGWjjaDkDi9A9FZW2dTEmx2odeULFgQZTsc8FeC5D909IdvZCdiTbesvdFnGLsIi-DDOyj33U"
+FUNSTAT_API_URL = "https://funstat.info/api/v1"
+
+
+# ====== QUICKFLOW ======
+QUICKFLOW_TOKEN = "063b6819d85570dfe1b5f5b4ba5be14ac1d66a74e848ee9d1588068a9cf9b372"
+QUICKFLOW_URL = "https://api.quickflow.lat"
+
+
+# ====== GOOGLE SEARCH ======
+GOOGLE_API_KEY = "AIzaSyDxQoDCbzrU22SwyLMln3Qj2__PMUFTC9o"
+GOOGLE_CX = "84a64448a902c4626"
+
+
+# ====== TONCENTER ======
+TONCENTER_URL = "https://toncenter.com/api/v3"
+
+
+# ====== DEPSEARCH ======
+DEPSEARCH_TOKEN = "TKeRG1ONMsqUrGIUeuTPbXegGPiwMpJ5"
+DEPSEARCH_BACKUP_TOKEN = "TKeRG1ONMsqUrGIUeuTPbXegGPiwMpJ5"
+DEPSEARCH_URL = "https://api.depsearch.sbs"
+
+
+# ====== NIGHTSEARCH ======
+ 
