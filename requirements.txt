@@ -1,0 +1,8 @@
+aiohttp
+beautifulsoup4
+httpx
+pypdf
+python-telegram-bot
+requests
+pyTelegramBotAPI
+weasyprint
