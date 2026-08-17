@@ -36,7 +36,7 @@ class Config:
     SNUS_RPS = 1.1
 
     # Dep
-    DEP_TOKEN = "TKeRG1ONMsqUrGIUeuTPbXegGPiwMpJ5"
+    DEP_TOKEN = "OsMTcjyHTRtfABnWA4V3d12SYKVIYE8z"
     DEP_URL = "https://api.depsearch.sbs"
     DEP_RPS = 1.1
 
