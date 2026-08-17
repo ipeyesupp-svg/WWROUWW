@@ -1,8 +1,4 @@
-aiohttp
-beautifulsoup4
-httpx
-pypdf
-python-telegram-bot
-requests
-pyTelegramBotAPI
-weasyprint
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+requests>=2.31.0
+pydantic>=2.5.0
